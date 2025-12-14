@@ -1,0 +1,3 @@
+D:/University/Information Security/QuantumSafeDiskEncryption/build/CMakeFiles/test_crypto.dir
+D:/University/Information Security/QuantumSafeDiskEncryption/build/CMakeFiles/ALL_BUILD.dir
+D:/University/Information Security/QuantumSafeDiskEncryption/build/CMakeFiles/ZERO_CHECK.dir

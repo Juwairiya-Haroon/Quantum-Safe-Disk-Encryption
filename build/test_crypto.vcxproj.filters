@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="D:\University\Information Security\QuantumSafeDiskEncryption\src\crypto\AES.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\University\Information Security\QuantumSafeDiskEncryption\src\crypto\PQC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\University\Information Security\QuantumSafeDiskEncryption\src\crypto\HybridEncryption.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\University\Information Security\QuantumSafeDiskEncryption\src\crypto\test_crypto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="D:\University\Information Security\QuantumSafeDiskEncryption\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{DE7545E2-D536-3B64-9A9C-AB17FC3C507A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

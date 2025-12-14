@@ -1,0 +1,10 @@
+^D:\UNIVERSITY\INFORMATION SECURITY\QUANTUMSAFEDISKENCRYPTION\BUILD\CMAKEFILES\5B1E2E6FE2415620A38AD0F2151DFDB1\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SD:/University/Information Security/QuantumSafeDiskEncryption" "-BD:/University/Information Security/QuantumSafeDiskEncryption/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "D:/University/Information Security/QuantumSafeDiskEncryption/build/Member1Crypto.slnx"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

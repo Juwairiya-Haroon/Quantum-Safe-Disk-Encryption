@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\University\Information Security\QuantumSafeDiskEncryption\build\CMakeFiles\5b1e2e6fe2415620a38ad0f2151dfdb1\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{BBCCAB69-EB40-3508-8B64-D50127565300}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
