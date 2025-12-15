@@ -1,5 +1,5 @@
 #include "AES.h"
-
+#include <cstddef>
 std::vector<uint8_t> AES::encrypt(
     const std::vector<uint8_t>& data,
     const std::vector<uint8_t>& key)
