@@ -1,0 +1,26 @@
+[
+{
+  "directory": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/build",
+  "command": "C:\\Users\\Admin\\Downloads\\mingww\\ucrt64\\bin\\g++.exe  @CMakeFiles/test_crypto.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\test_crypto.dir\\src\\crypto\\AES.cpp.obj -c C:\\Users\\Admin\\Quantum-Safe-Disk-Encryption\\src\\crypto\\AES.cpp",
+  "file": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/src/crypto/AES.cpp",
+  "output": "CMakeFiles/test_crypto.dir/src/crypto/AES.cpp.obj"
+},
+{
+  "directory": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/build",
+  "command": "C:\\Users\\Admin\\Downloads\\mingww\\ucrt64\\bin\\g++.exe  @CMakeFiles/test_crypto.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\test_crypto.dir\\src\\crypto\\PQC.cpp.obj -c C:\\Users\\Admin\\Quantum-Safe-Disk-Encryption\\src\\crypto\\PQC.cpp",
+  "file": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/src/crypto/PQC.cpp",
+  "output": "CMakeFiles/test_crypto.dir/src/crypto/PQC.cpp.obj"
+},
+{
+  "directory": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/build",
+  "command": "C:\\Users\\Admin\\Downloads\\mingww\\ucrt64\\bin\\g++.exe  @CMakeFiles/test_crypto.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\test_crypto.dir\\src\\crypto\\HybridEncryption.cpp.obj -c C:\\Users\\Admin\\Quantum-Safe-Disk-Encryption\\src\\crypto\\HybridEncryption.cpp",
+  "file": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/src/crypto/HybridEncryption.cpp",
+  "output": "CMakeFiles/test_crypto.dir/src/crypto/HybridEncryption.cpp.obj"
+},
+{
+  "directory": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/build",
+  "command": "C:\\Users\\Admin\\Downloads\\mingww\\ucrt64\\bin\\g++.exe  @CMakeFiles/test_crypto.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\test_crypto.dir\\src\\crypto\\test_crypto.cpp.obj -c C:\\Users\\Admin\\Quantum-Safe-Disk-Encryption\\src\\crypto\\test_crypto.cpp",
+  "file": "C:/Users/Admin/Quantum-Safe-Disk-Encryption/src/crypto/test_crypto.cpp",
+  "output": "CMakeFiles/test_crypto.dir/src/crypto/test_crypto.cpp.obj"
+}
+]
