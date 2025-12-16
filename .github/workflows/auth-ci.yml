@@ -1,0 +1,41 @@
+name: Authentication Module CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test-auth:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install compiler
+        run: sudo apt update && sudo apt install -y g++
+
+      - name: Create logs directory
+        run: mkdir -p logs
+
+      - name: Compile authentication test
+        run: |
+          g++ src/cli/main.cpp \
+          src/auth/AuthManager.cpp \
+          src/auth/PasswordHasher.cpp \
+          src/auth/TwoFactor.cpp \
+          src/auth/PolicyEnforcer.cpp \
+          src/auth/AuditLogger.cpp \
+          -o auth_test
+
+      - name: Run authentication test (auto input)
+        run: |
+          printf "admin\nadmin123\n123456\n" | ./auth_test
+
+      - name: Upload security log artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-log
+          path: logs/security.log
