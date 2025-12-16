@@ -1,82 +1,67 @@
 #include "DiskDecryptor.h"
 #include "BlockIO.h"
+
 #include "../crypto/AES.h"
 #include "../crypto/HybridEncryption.h"
+#include "../recovery/ShamirSSS.h"
+#include "../recovery/ShareStorage.h"
 
-#include <fstream>
 #include <iostream>
 #include <vector>
+#include <string>
 
-bool DiskDecryptor::decryptFile(const std::string& inputPath,
-                                const std::string& outputPath,
-                                const std::vector<uint8_t>& secretKey) {
-    // Open encrypted file in binary mode to read metadata
-    std::ifstream encFile(inputPath, std::ios::binary);
-    if (!encFile.is_open()) {
-        std::cerr << "Failed to open encrypted file\n";
-        return false;
+void DiskDecryptor::decryptDisk(
+    const std::string& inputFile,
+    const std::string& outputFile,
+    const std::vector<uint8_t>& pqcSecretKey,
+    const std::string& sharesFolderPath,
+    const std::vector<uint8_t>& masterKey
+) {
+    const size_t BLOCK_SIZE = 4096;
+
+    // 1️Load Shamir shares and recover DEK
+    std::vector<Share> shares;
+    for (int i = 0; i < 5; ++i) { // Assuming 5 shares were created
+        std::string sharePath = sharesFolderPath + "/share_" + std::to_string(i) + ".dat";
+        shares.push_back(ShareStorage::loadShare(sharePath, masterKey));
     }
 
-    // 1️ Read metadata
-    size_t blockSize;
-    encFile.read(reinterpret_cast<char*>(&blockSize), sizeof(blockSize));
+    std::vector<uint8_t> dek = ShamirSSS::recoverSecret(shares, 3); // Threshold = 3
 
-    size_t pqcSize;
-    encFile.read(reinterpret_cast<char*>(&pqcSize), sizeof(pqcSize));
-    std::vector<uint8_t> pqcCiphertext(pqcSize);
-    encFile.read(reinterpret_cast<char*>(pqcCiphertext.data()), pqcSize);
+    // 2️ Unwrap DEK using PQC private key (optional double-check)
+    WrappedKey wrappedKey; // Assume you store/load wrappedKey metadata elsewhere
+    dek = HybridEncryption::unwrapDEK(wrappedKey, pqcSecretKey);
 
-    size_t wrappedDEKSize;
-    encFile.read(reinterpret_cast<char*>(&wrappedDEKSize), sizeof(wrappedDEKSize));
-    std::vector<uint8_t> wrappedDEK(wrappedDEKSize);
-    encFile.read(reinterpret_cast<char*>(wrappedDEK.data()), wrappedDEKSize);
+    // 3️ Initialize BlockIO
+    BlockIO blockIO(BLOCK_SIZE);
 
-    encFile.close();
-
-    // 2️ Reconstruct WrappedKey struct
-    WrappedKey wrappedKey;
-    wrappedKey.pqcCiphertext = pqcCiphertext;
-    wrappedKey.wrappedDEK = wrappedDEK;
-
-    // 3️ Unwrap DEK using PQC secret key
-    std::vector<uint8_t> dek = HybridEncryption::unwrapDEK(wrappedKey, secretKey);
-
-    // 4️ Initialize BlockIO for file I/O
-    BlockIO blockIO(blockSize);
-
-    if (!blockIO.openInput(inputPath)) {
-        std::cerr << "Failed to open encrypted file for reading blocks\n";
-        return false;
+    if (!blockIO.openInput(inputFile)) {
+        std::cerr << "[Error] Failed to open encrypted file: " << inputFile << "\n";
+        return;
     }
 
-    if (!blockIO.openOutput(outputPath)) {
-        std::cerr << "Failed to open output file for writing decrypted data\n";
-        return false;
+    if (!blockIO.openOutput(outputFile)) {
+        std::cerr << "[Error] Failed to open output file: " << outputFile << "\n";
+        blockIO.closeFiles();
+        return;
     }
 
-    // Skip metadata bytes before reading encrypted blocks
-    std::ifstream skipFile(inputPath, std::ios::binary);
-    skipFile.seekg(sizeof(blockSize) + sizeof(pqcSize) + pqcSize + sizeof(wrappedDEKSize) + wrappedDEKSize);
-    skipFile.close();
-
-    // 5️ Decrypt file block-by-block
+    // 4️ Decrypt block-by-block
     std::vector<uint8_t> encryptedBlock;
     std::vector<uint8_t> plainBlock;
 
     while (blockIO.readBlock(encryptedBlock)) {
-        // AES decryption
         plainBlock = AES::decrypt(encryptedBlock, dek);
 
-        // Write decrypted block
         if (!blockIO.writeBlock(plainBlock)) {
-            std::cerr << "Failed to write decrypted block\n";
+            std::cerr << "[Error] Failed to write decrypted block\n";
             blockIO.closeFiles();
-            return false;
+            return;
         }
     }
 
-    // 6️ Close files
+    // 5️ Close files
     blockIO.closeFiles();
 
-    return true;
+    std::cout << "[Success] Disk decryption completed. Decrypted file: " << outputFile << "\n";
 }

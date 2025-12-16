@@ -1,86 +1,72 @@
 #include "DiskEncryptor.h"
 #include "BlockIO.h"
+
 #include "../crypto/AES.h"
 #include "../crypto/HybridEncryption.h"
+#include "../recovery/ShamirSSS.h"
+#include "../recovery/ShareStorage.h"
 
-#include <fstream>
 #include <iostream>
+#include <cstdint>
+#include <string>
+#include <vector>
 
-// Encrypt a file using AES + PQC-wrapped DEK
-bool DiskEncryptor::encryptFile(const std::string& inputPath,
-                                const std::string& outputPath,
-                                const std::vector<uint8_t>& publicKey) {
+void DiskEncryptor::encryptDisk(
+    const std::string& inputFile,
+    const std::string& outputFile,
+    const std::vector<uint8_t>& pqcPublicKey,
+    const std::string& sharesFolderPath,       // Path to store Shamir shares
+    const std::vector<uint8_t>& masterKey      // Optional key to encrypt shares
+) {
     const size_t BLOCK_SIZE = 4096;
 
-    // 1. Generate Data Encryption Key (DEK)
-    // This key is used ONLY for AES file encryption
-    std::vector<uint8_t> dek =
-        HybridEncryption::generateDEK();
+    // 1️⃣ Generate Data Encryption Key (DEK)
+    std::vector<uint8_t> dek = HybridEncryption::generateDEK();
 
-    // 2. Wrap DEK using PQC public key
-    // This protects the DEK for secure storage
-    WrappedKey wrappedKey =
-        HybridEncryption::wrapDEK(dek, publicKey);
+    // 2️⃣ Split DEK into shares (threshold k=3, total n=5)
+    std::vector<Share> shares = ShamirSSS::splitSecret(dek, 3, 5);
 
-    // 3. Initialize block-level file I/O
+    // 3️⃣ Store shares securely
+    for (size_t i = 0; i < shares.size(); ++i) {
+        std::string sharePath = sharesFolderPath + "/share_" + std::to_string(i) + ".dat";
+        ShareStorage::storeShare(shares[i], sharePath, masterKey);
+    }
+
+    // 4️⃣ Wrap DEK using PQC (Kyber-style or whatever PQC module)
+    WrappedKey wrappedKey = HybridEncryption::wrapDEK(dek, pqcPublicKey);
+
+    // 5️⃣ Initialize block I/O
     BlockIO blockIO(BLOCK_SIZE);
 
-    if (!blockIO.openInput(inputPath)) {
-        std::cerr << "Failed to open input file\n";
-        return false;
+    if (!blockIO.openInput(inputFile)) {
+        std::cerr << "[Error] Failed to open input file: " << inputFile << "\n";
+        return;
     }
 
-    if (!blockIO.openOutput(outputPath)) {
-        std::cerr << "Failed to open output file\n";
-        return false;
+    if (!blockIO.openOutput(outputFile)) {
+        std::cerr << "[Error] Failed to open output file: " << outputFile << "\n";
+        blockIO.closeFiles();
+        return;
     }
 
-    /*
-     * 4. Write encryption metadata at file start
-     * Metadata format:
-     * [BLOCK_SIZE]
-     * [PQC_CIPHERTEXT_SIZE][PQC_CIPHERTEXT_BYTES]
-     * [WRAPPED_DEK_SIZE][WRAPPED_DEK_BYTES]
-     */
-    {
-        std::ofstream metaOut(outputPath, std::ios::binary | std::ios::app);
-        if (!metaOut.is_open()) {
-            std::cerr << "Failed to write metadata\n";
-            return false;
-        }
-
-        size_t pqcSize = wrappedKey.pqcCiphertext.size();
-        size_t dekSize = wrappedKey.wrappedDEK.size();
-
-        metaOut.write(reinterpret_cast<const char*>(&BLOCK_SIZE), sizeof(BLOCK_SIZE));
-
-        metaOut.write(reinterpret_cast<const char*>(&pqcSize), sizeof(pqcSize));
-        metaOut.write(reinterpret_cast<const char*>(wrappedKey.pqcCiphertext.data()), pqcSize);
-
-        metaOut.write(reinterpret_cast<const char*>(&dekSize), sizeof(dekSize));
-        metaOut.write(reinterpret_cast<const char*>(wrappedKey.wrappedDEK.data()), dekSize);
-
-        metaOut.close();
-    }
-
-    // 5. Encrypt file block-by-block using AES
+    // 6️⃣ Encrypt block-by-block
     std::vector<uint8_t> plainBlock;
     std::vector<uint8_t> encryptedBlock;
 
     while (blockIO.readBlock(plainBlock)) {
-        // Encrypt block using AES with DEK
+        // Encrypt using AES with DEK
         encryptedBlock = AES::encrypt(plainBlock, dek);
 
-        // Write encrypted block to output file
+        // Write encrypted block
         if (!blockIO.writeBlock(encryptedBlock)) {
-            std::cerr << "Failed to write encrypted block\n";
+            std::cerr << "[Error] Failed to write encrypted block\n";
             blockIO.closeFiles();
-            return false;
+            return;
         }
     }
 
-    // 6. Close files
+    // 7️⃣ Close files
     blockIO.closeFiles();
 
-    return true;
+    std::cout << "[Success] Disk encryption completed. Encrypted file: " << outputFile << "\n";
 }
