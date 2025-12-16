@@ -1,21 +1,23 @@
 #pragma once
-#include <vector>
 #include <string>
-#include <cstdint>  // <--- Required for uint8_t
-
-struct WrappedKey; // Forward declaration if needed
+#include <vector>
+#include <cstdint>
 
 class DiskDecryptor {
 public:
-    /*
-     * Decrypts an encrypted file and writes the original file.
-     *
-     * @param inputPath    Path of the encrypted input file
-     * @param outputPath   Path of the decrypted output file
-     * @param secretKey    PQC secret key used to unwrap the DEK
-     * @return true if decryption succeeds
+    /**
+     * Decrypt a disk/file that was encrypted using DiskEncryptor.
+     * @param inputFile Path to the encrypted file
+     * @param outputFile Path to write the decrypted file
+     * @param pqcSecretKey PQC private key to unwrap DEK
+     * @param sharesFolderPath Path where Shamir shares are stored
+     * @param masterKey Optional key used to decrypt shares
      */
-    bool decryptFile(const std::string& inputPath,
-                     const std::string& outputPath,
-                     const std::vector<uint8_t>& secretKey);  // <--- uint8_t
+    void decryptDisk(
+        const std::string& inputFile,
+        const std::string& outputFile,
+        const std::vector<uint8_t>& pqcSecretKey,
+        const std::string& sharesFolderPath,
+        const std::vector<uint8_t>& masterKey
+    );
 };
